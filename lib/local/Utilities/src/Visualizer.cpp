@@ -128,6 +128,12 @@ void Visualizer::SetImage(const cv::Mat& canvas, float fx, float fy, float cx, f
 
 }
 
+void Visualizer::SetTags(const cv::Mat tag1, const cv::Mat tag2)
+{
+  tag_1 = tag1;
+  tag_2 = tag2;
+}
+
 
 void Visualizer::SetObservationFaceAlign(const cv::Mat& aligned_face)
 {
@@ -320,6 +326,68 @@ void Visualizer::SetObservationActionUnits(const std::vector<std::pair<std::stri
 			idx++;
 		}
 	}
+}
+
+
+void Visualizer::AddAprilTags(const std::vector<cv::Point2f>& eye_landmarks2d, const std::vector<cv::Point3f>& eye_landmarks3d, double confidence)
+{
+  if (confidence > visualisation_boundary)
+  {
+    if (eye_landmarks2d.size() > 0)
+    {
+      // Calculate the pupil centroids
+      cv::Point2f pupil_left_coords(0, 0);
+      cv::Point2f pupil_right_coords(0, 0);
+
+      for (size_t i = 0; i < 8; ++i)
+      {
+        pupil_left_coords = pupil_left_coords + eye_landmarks2d[i];
+        pupil_right_coords = pupil_right_coords + eye_landmarks2d[i + 28];
+      }
+      pupil_left_coords = pupil_left_coords / 8;
+      pupil_right_coords = pupil_right_coords / 8;
+
+      // Testing: Drawing line between pupil centroids
+      /*
+      cv::Point pupil_left(cvRound(pupil_left_coords.x * (double)draw_multiplier), cvRound(pupil_left_coords.y * (double)draw_multiplier));
+      cv::Point pupil_right(cvRound(pupil_right_coords.x * (double)draw_multiplier), cvRound(pupil_right_coords.y * (double)draw_multiplier));
+      cv::line(captured_image, pupil_left, pupil_right, cv::Scalar(255, 0, 255), 1, cv::LINE_AA, draw_shiftbits);
+      */
+
+      // Calculate tag coordinates
+      cv::Point2f diff = pupil_right_coords - pupil_left_coords;
+      cv::Point2f tag_left_coords = pupil_left_coords - diff;
+      cv::Point2f tag_right_coords = pupil_right_coords + diff;
+
+      cv::Point tag_left(cvRound(tag_left_coords.x * (double)draw_multiplier), cvRound(tag_left_coords.y * (double)draw_multiplier));
+      cv::Point tag_right(cvRound(tag_right_coords.x * (double)draw_multiplier), cvRound(tag_right_coords.y * (double)draw_multiplier));
+
+      // Testing: Drawing line between tag points
+      /*
+      cv::line(captured_image, tag_left, tag_right, cv::Scalar(255, 0, 0), 1, cv::LINE_AA, draw_shiftbits);
+      */
+
+      // Testing: Add circles at tag points
+      /*
+      cv::circle(captured_image, tag_left, 200, cv::Scalar(255, 0, 255), -1, cv::LINE_AA, draw_shiftbits);
+      cv::circle(captured_image, tag_right, 200, cv::Scalar(255, 0, 255), -1, cv::LINE_AA, draw_shiftbits);
+      */
+
+      // Add Tags to tag points
+      cv::Point tag_left_shifted(cvRound(tag_left_coords.x - tag_1.cols / 2), cvRound(tag_left_coords.y - tag_1.rows / 2));
+      cv::Point tag_right_shifted(cvRound(tag_right_coords.x - tag_2.cols / 2), cvRound(tag_right_coords.y - tag_2.rows / 2));
+      if (tag_left_shifted.x > 0 && tag_left_shifted.x + tag_1.cols < captured_image.cols && tag_left_shifted.y > 0 && tag_left_shifted.y + tag_1.rows < captured_image.rows)
+      {
+        cv::Mat dest_1 = captured_image(cv::Rect(tag_left_shifted.x, tag_left_shifted.y, tag_1.cols, tag_1.rows));
+        tag_1.copyTo(dest_1);
+      }
+      if (tag_right_shifted.x > 0 && tag_right_shifted.x + tag_2.cols < captured_image.cols && tag_right_shifted.y > 0 && tag_right_shifted.y + tag_2.rows < captured_image.rows)
+      {
+        cv::Mat dest_2 = captured_image(cv::Rect(tag_right_shifted.x, tag_right_shifted.y, tag_2.cols, tag_2.rows));
+        tag_2.copyTo(dest_2);
+      }
+    }
+  }
 }
 
 

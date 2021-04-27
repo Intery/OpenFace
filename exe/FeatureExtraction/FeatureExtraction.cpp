@@ -129,6 +129,12 @@ int main(int argc, char **argv)
 	Utilities::FpsTracker fps_tracker;
 	fps_tracker.AddFrame();
 
+    // April tags
+    cv::Mat tag1 = cv::imread("tags/tag0.png");
+    cv::resize(tag1, tag1, cv::Size(50, 50), 0, 0, cv::INTER_AREA);
+    cv::Mat tag2 = cv::imread("tags/tag1.png");
+    cv::resize(tag2, tag2, cv::Size(50, 50), 0, 0, cv::INTER_AREA);
+
 	while (true) // this is not a for loop as we might also be reading from a webcam
 	{
 
@@ -203,12 +209,14 @@ int main(int argc, char **argv)
 
 			// Displaying the tracking visualizations
 			visualizer.SetImage(captured_image, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy);
-			visualizer.SetObservationFaceAlign(sim_warped_img);
-			visualizer.SetObservationHOG(hog_descriptor, num_hog_rows, num_hog_cols);
-			visualizer.SetObservationLandmarks(face_model.detected_landmarks, face_model.detection_certainty, face_model.GetVisibilities());
-			visualizer.SetObservationPose(pose_estimate, face_model.detection_certainty);
-			visualizer.SetObservationGaze(gazeDirection0, gazeDirection1, LandmarkDetector::CalculateAllEyeLandmarks(face_model), LandmarkDetector::Calculate3DEyeLandmarks(face_model, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy), face_model.detection_certainty);
-			visualizer.SetObservationActionUnits(face_analyser.GetCurrentAUsReg(), face_analyser.GetCurrentAUsClass());
+            visualizer.SetTags(tag1, tag2);
+			// visualizer.SetObservationFaceAlign(sim_warped_img);
+			// visualizer.SetObservationHOG(hog_descriptor, num_hog_rows, num_hog_cols);
+			// visualizer.SetObservationLandmarks(face_model.detected_landmarks, face_model.detection_certainty, face_model.GetVisibilities());
+            visualizer.AddAprilTags(LandmarkDetector::CalculateAllEyeLandmarks(face_model), LandmarkDetector::Calculate3DEyeLandmarks(face_model, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy), face_model.detection_certainty);
+			// visualizer.SetObservationPose(pose_estimate, face_model.detection_certainty);
+			// visualizer.SetObservationGaze(gazeDirection0, gazeDirection1, LandmarkDetector::CalculateAllEyeLandmarks(face_model), LandmarkDetector::Calculate3DEyeLandmarks(face_model, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy), face_model.detection_certainty);
+			// visualizer.SetObservationActionUnits(face_analyser.GetCurrentAUsReg(), face_analyser.GetCurrentAUsClass());
 			visualizer.SetFps(fps_tracker.GetFPS());
 
 			// detect key presses

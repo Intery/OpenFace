@@ -60,6 +60,7 @@ namespace Utilities
 		
 		// Pose related observations
 		void SetImage(const cv::Mat& canvas, float fx, float fy, float cx, float cy);
+        void SetTags(const cv::Mat tag1, const cv::Mat tag2);
 
 		// All observations relevant to facial landmarks (optional visibilities parameter to not display all landmarks)
 		void SetObservationLandmarks(const cv::Mat_<float>& landmarks_2D, double confidence, const cv::Mat_<int>& visibilities = cv::Mat_<int>());
@@ -68,6 +69,8 @@ namespace Utilities
 		void SetObservationPose(const cv::Vec6f& pose, double confidence);
 		
 		void SetObservationActionUnits(const std::vector<std::pair<std::string, double> >& au_intensities, const std::vector<std::pair<std::string, double> >& au_occurences);
+
+		void AddAprilTags(const std::vector<cv::Point2f>& eye_landmarks, const std::vector<cv::Point3f>& eye_landmarks3d, double confidence);
 
 		// Gaze related observations
 		void SetObservationGaze(const cv::Point3f& gazeDirection0, const cv::Point3f& gazeDirection1, const std::vector<cv::Point2f>& eye_landmarks, const std::vector<cv::Point3f>& eye_landmarks3d, double confidence);
@@ -103,6 +106,9 @@ namespace Utilities
 		cv::Mat hog_image;
 		cv::Mat aligned_face_image;
 		cv::Mat action_units_image;
+
+        cv::Mat tag_1;
+        cv::Mat tag_2;
 
 		// Useful for drawing 3d
 		float fx, fy, cx, cy;
